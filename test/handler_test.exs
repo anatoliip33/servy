@@ -172,6 +172,52 @@ defmodule HandlerTest do
     """
   end
 
+  test "GET /api/bears" do
+    request = """
+    GET /api/bears HTTP/1.1\r
+    Host: example.com\r
+    User-Agent: ExampleBrowser/1.0\r
+    Accept: */*\r
+    \r
+    """
+
+    response = handle(request)
+
+    expected_response = """
+    HTTP/1.1 200 OK\r
+    Content-Type: application/json\r
+    Content-Length: 605\r
+    \r
+    [{"hibernating":true,"type":"Brown","name":"Teddy","id":1},
+     {"hibernating":false,"type":"Black","name":"Smokey","id":2},
+     {"hibernating":false,"type":"Brown","name":"Paddington","id":3},
+     {"hibernating":true,"type":"Grizzly","name":"Scarface","id":4},
+     {"hibernating":false,"type":"Polar","name":"Snow","id":5},
+     {"hibernating":false,"type":"Grizzly","name":"Brutus","id":6},
+     {"hibernating":true,"type":"Black","name":"Rosie","id":7},
+     {"hibernating":false,"type":"Panda","name":"Roscoe","id":8},
+     {"hibernating":true,"type":"Polar","name":"Iceman","id":9},
+     {"hibernating":false,"type":"Grizzly","name":"Kenai","id":10}]
+    """
+
+    assert remove_whitespace(response) == remove_whitespace(expected_response)
+
+    # Alternatively, because the encoded JSON doesn't ensure the
+    # ordering of the map keys, instead of comparing encoded JSON
+    # strings you could convert the encoded JSON back to a map using
+    # Poison.decode/1 and then compare the maps which won't fail
+    # if the ordering of keys is different.
+
+    [response_header, response_body] =
+      String.split(response, "\r\n\r\n")
+
+    [expected_response_header, expected_response_body] =
+      String.split(expected_response, "\r\n\r\n")
+
+    assert response_header == expected_response_header
+    assert Poison.decode(response_body) == Poison.decode(expected_response_body)
+  end
+
   defp remove_whitespace(text) do
     String.replace(text, ~r{\s}, "")
   end

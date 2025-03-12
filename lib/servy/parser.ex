@@ -9,14 +9,15 @@ defmodule Servy.Parser do
     [method, path, _] = String.split(request_line, " ")
 
     headers = parse_headers(header_lines, %{})
+
     params = parse_params(headers["Content-Type"], params_string)
 
     %Conv{
-      method: method,
-      path: path,
-      params: params,
-      headers: headers
-    }
+       method: method,
+       path: path,
+       params: params,
+       headers: headers
+     }
   end
 
   @doc """
