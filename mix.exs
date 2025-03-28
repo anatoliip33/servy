@@ -5,7 +5,7 @@ defmodule Servy.Mixfile do
     [
       app: :servy,
       version: "0.1.0",
-      elixir: "~> 1.14",
+      elixir: "~> 1.18",
       start_permanent: Mix.env == :prod,
       deps: deps()
     ]
@@ -21,7 +21,8 @@ defmodule Servy.Mixfile do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:poison, "~> 6.0"}
+      {:poison, "~> 6.0"},
+      {:httpoison, "~> 2.0"}
     ]
   end
 end

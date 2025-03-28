@@ -4,29 +4,49 @@ defmodule Servy.Handler do
   """
   alias Servy.Conv
   alias Servy.BearController
+  alias Servy.VideoCam
 
-  import Servy.Plugins, only: [rewrite_path: 1, track: 1, log: 1]
+  import Servy.Plugins, only: [rewrite_path: 1, track: 1]
   import Servy.Parser, only: [parse: 1]
   import Servy.FileHandler, only: [handle_file: 2]
 
-  @pages_path Path.expand("lib/pages", File.cwd!)
+  @pages_path Path.expand("lib/pages", File.cwd!())
 
   @doc "Transforms the request into a response."
   def handle(request) do
     request
     |> parse
     |> rewrite_path
-    |> log
     |> route
     |> track
     |> format_response
   end
 
-  def route(%Conv{method: "GET", path: "/wildthings"} = conv) do
-    %{ conv | status: 200, resp_body: "Bears, Lions, Tigers" }
+  def route(%Conv{ method: "GET", path: "/kaboom" }) do
+    raise "Kaboom!"
   end
 
-  def route(%Conv{ method: "GET", path: "/api/bears" } = conv) do
+  def route(%Conv{ method: "GET", path: "/snapshots" } = conv) do
+    snapshot1 = VideoCam.get_snapshot("cam-1")
+    snapshot2 = VideoCam.get_snapshot("cam-2")
+    snapshot3 = VideoCam.get_snapshot("cam-3")
+
+    snapshots = [snapshot1, snapshot2, snapshot3]
+
+    %{ conv | status: 200, resp_body: inspect snapshots}
+  end
+
+  def route(%Conv{method: "GET", path: "/hibernate/" <> time} = conv) do
+    time |> String.to_integer() |> :timer.sleep()
+
+    %{conv | status: 200, resp_body: "Awake!"}
+  end
+
+  def route(%Conv{method: "GET", path: "/wildthings"} = conv) do
+    %{conv | status: 200, resp_body: "Bears, Lions, Tigers"}
+  end
+
+  def route(%Conv{method: "GET", path: "/api/bears"} = conv) do
     Servy.Api.BearController.index(conv)
   end
 
@@ -62,7 +82,7 @@ defmodule Servy.Handler do
   end
 
   def route(%Conv{path: path} = conv) do
-    %{ conv | status: 404, resp_body: "No #{path} here!"}
+    %{conv | status: 404, resp_body: "No #{path} here!"}
   end
 
   def format_response(%Conv{} = conv) do
