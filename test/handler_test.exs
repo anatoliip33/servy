@@ -44,7 +44,7 @@ defmodule HandlerTest do
     <ul>
       <li>Brutus - Grizzly</li>
       <li>Iceman - Polar</li>
-      <li>Kenai - Grizzly</li>
+      <li>Kenay - Grizzly</li>
       <li>Paddington - Brown</li>
       <li>Roscoe - Panda</li>
       <li>Rosie - Black</li>
