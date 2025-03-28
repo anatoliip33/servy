@@ -22,18 +22,29 @@ defmodule Servy.Handler do
     |> format_response
   end
 
-  def route(%Conv{ method: "GET", path: "/kaboom" }) do
-    raise "Kaboom!"
+  def route(%Conv{method: "POST", path: "/pledges"} = conv) do
+    Servy.PledgeController.create(conv, conv.params)
   end
 
-  def route(%Conv{ method: "GET", path: "/snapshots" } = conv) do
-    snapshot1 = VideoCam.get_snapshot("cam-1")
-    snapshot2 = VideoCam.get_snapshot("cam-2")
-    snapshot3 = VideoCam.get_snapshot("cam-3")
+  def route(%Conv{method: "GET", path: "/pledges"} = conv) do
+    Servy.PledgeController.index(conv)
+  end
 
-    snapshots = [snapshot1, snapshot2, snapshot3]
+  def route(%Conv{ method: "GET", path: "/sensors" } = conv) do
+    task = Task.async(fn -> Servy.Tracker.get_location("bigfoot") end)
 
-    %{ conv | status: 200, resp_body: inspect snapshots}
+    snapshots =
+      ["cam-1", "cam-2", "cam-3"]
+      |> Enum.map(&Task.async(fn -> VideoCam.get_snapshot(&1) end))
+      |> Enum.map(&Task.await/1)
+
+    where_is_bigfoot = Task.await(task)
+
+    %{ conv | status: 200, resp_body: inspect {snapshots, where_is_bigfoot} }
+  end
+
+  def route(%Conv{ method: "GET", path: "/kaboom" }) do
+    raise "Kaboom!"
   end
 
   def route(%Conv{method: "GET", path: "/hibernate/" <> time} = conv) do
